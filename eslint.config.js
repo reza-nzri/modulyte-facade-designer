@@ -1,26 +1,24 @@
-import prettier from 'eslint-config-prettier';
-import path from 'node:path';
 import js from '@eslint/js';
+import prettier from 'eslint-config-prettier';
 import svelte from 'eslint-plugin-svelte';
-import { defineConfig, includeIgnoreFile } from 'eslint/config';
 import globals from 'globals';
 import ts from 'typescript-eslint';
+import svelteConfig from './svelte.config.js';
 
-const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
-
-export default defineConfig(
-	includeIgnoreFile(gitignorePath),
+export default ts.config(
 	js.configs.recommended,
-	ts.configs.recommended,
-	svelte.configs.recommended,
+	...ts.configs.recommended,
+	...svelte.configs.recommended,
 	prettier,
-	svelte.configs.prettier,
+	...svelte.configs.prettier,
 	{
-		languageOptions: { globals: { ...globals.browser, ...globals.node } },
+		languageOptions: {
+			globals: { ...globals.browser, ...globals.node }
+		},
 		rules: {
-			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
-			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-			'no-undef': 'off'
+			'no-undef': 'off',
+			'@typescript-eslint/no-explicit-any': 'error',
+			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
 		}
 	},
 	{
@@ -29,13 +27,22 @@ export default defineConfig(
 			parserOptions: {
 				projectService: true,
 				extraFileExtensions: ['.svelte'],
-				parser: ts.parser
+				parser: ts.parser,
+				svelteConfig
 			}
 		}
 	},
 	{
-		// Override or add rule settings here, such as:
-		// 'svelte/button-has-type': 'error'
-		rules: {}
+		// The domain layer must stay framework-free so it can be reused by an API or other clients.
+		files: ['src/lib/domain/**/*.ts'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{ patterns: ['svelte', 'svelte/*', '$app/*', 'three', '$lib/features/*'] }
+			]
+		}
+	},
+	{
+		ignores: ['build/', '.svelte-kit/', 'dist/', 'coverage/', 'playwright-report/', 'test-results/']
 	}
 );

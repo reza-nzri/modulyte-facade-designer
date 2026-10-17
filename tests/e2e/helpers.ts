@@ -33,3 +33,20 @@ export async function clickModule(
 		.locator(`[data-module-id="${moduleId}"]`)
 		.click({ modifiers, force: true });
 }
+
+function escapeRegExp(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Web-first (auto-retrying) assertion for a German euro amount, e.g. "3.352,00 €". */
+function amountPattern(expected: string): RegExp {
+	return new RegExp(escapeRegExp(expected.replace(/\s*€$/, '')).replace(/ /g, '\\s') + '\\s*€');
+}
+
+export async function expectWallTotal(page: Page, expected: string) {
+	await expect(page.getByTestId('wall-total')).toHaveText(amountPattern(expected));
+}
+
+export async function expectProjectTotal(page: Page, expected: string) {
+	await expect(page.getByTestId('project-total')).toHaveText(amountPattern(expected));
+}

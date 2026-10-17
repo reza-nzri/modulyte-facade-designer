@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "modulyte.facade-design"
+    },
+    "formatVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "exportedAt": {
+      "type": "string"
+    },
+    "app": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "variantName": {
+      "type": "string"
+    },
+    "customerNote": {
+      "type": "string"
+    },
+    "projectKey": {
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "minLength": 1
+        },
+        "walls": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string"
+              },
+              "width_mm": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height_mm": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "openings": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "window",
+                        "door"
+                      ]
+                    },
+                    "x_mm": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "y_mm": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "width_mm": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "height_mm": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "x_mm",
+                    "y_mm",
+                    "width_mm",
+                    "height_mm"
+                  ],
+                  "additionalProperties": {}
+                }
+              },
+              "modules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "standard",
+                        "special"
+                      ]
+                    },
+                    "x_mm": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "y_mm": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "width_mm": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    "height_mm": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "type",
+                    "x_mm",
+                    "y_mm",
+                    "width_mm",
+                    "height_mm"
+                  ],
+                  "additionalProperties": {}
+                }
+              }
+            },
+            "required": [
+              "id",
+              "width_mm",
+              "height_mm",
+              "modules"
+            ],
+            "additionalProperties": {}
+          }
+        },
+        "surfaces": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "colors": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "eur_per_m2": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "colors",
+              "eur_per_m2"
+            ],
+            "additionalProperties": {}
+          }
+        }
+      },
+      "required": [
+        "project",
+        "walls",
+        "surfaces"
+      ],
+      "additionalProperties": {}
+    },
+    "design": {
+      "type": "object",
+      "properties": {
+        "wallFinishes": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "surfaceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "color": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "surfaceId",
+              "color"
+            ]
+          }
+        },
+        "moduleOverrides": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "surfaceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "color": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "surfaceId",
+                "color"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "wallFinishes"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "totalEur": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "totalEur"
+      ],
+      "additionalProperties": {}
+    }
+  },
+  "required": [
+    "format",
+    "formatVersion",
+    "source",
+    "design"
+  ],
+  "title": "Modulyte facade design document v1 (export)",
+  "description": "Customer design exported by the Fassadendesigner: unchanged source project, design (wall finishes and module overrides) and a derived pricing summary."
+}

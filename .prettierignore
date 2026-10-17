@@ -7,3 +7,5 @@ playwright-report
 test-results
 # Original assessment data is kept byte-for-byte as delivered.
 static/projects/fassadendesigner_house.json
+# Generated from the Zod schemas by src/lib/io/schemas.test.ts
+docs/schemas

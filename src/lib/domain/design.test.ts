@@ -3,6 +3,7 @@ import {
 	applyFinishToAllWalls,
 	applyModuleFinish,
 	applyWallFinish,
+	collapseUniformWalls,
 	countOverrides,
 	createDefaultDesign,
 	getModuleFinish,
@@ -76,6 +77,25 @@ describe('design operations', () => {
 		expect(new Set(Object.values(design.wallFinishes).map((f) => f.surfaceId))).toEqual(
 			new Set(['rockpanel'])
 		);
+	});
+});
+
+describe('collapseUniformWalls', () => {
+	it('turns a wall whose modules all share one finish into a wall finish', () => {
+		const project = createTinyProject();
+		const allModules = ['A', 'B', 'C', 'D'];
+		const design = applyModuleFinish(createDefaultDesign(project), 'front', allModules, brick);
+		expect(countOverrides(design)).toBe(4);
+		const collapsed = collapseUniformWalls(project, design);
+		expect(collapsed.wallFinishes.front).toEqual(brick);
+		expect(countOverrides(collapsed)).toBe(0);
+		for (const id of allModules) expect(getModuleFinish(collapsed, 'front', id)).toEqual(brick);
+	});
+
+	it('keeps mixed walls untouched and returns the same object', () => {
+		const project = createTinyProject();
+		const design = applyModuleFinish(createDefaultDesign(project), 'front', ['A', 'B'], brick);
+		expect(collapseUniformWalls(project, design)).toBe(design);
 	});
 });
 

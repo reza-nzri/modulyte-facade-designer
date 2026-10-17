@@ -197,7 +197,34 @@ export function sanitizeDesign(
 		issues.push({ message: `Unbekannte Wände ignoriert: ${unknownWalls.join(', ')}.` });
 	}
 
-	return { design: normalizeDesign({ wallFinishes, moduleOverrides }), issues };
+	return {
+		design: collapseUniformWalls(project, normalizeDesign({ wallFinishes, moduleOverrides })),
+		issues
+	};
+}
+
+/**
+ * When every module of a wall carries the same individual finish, that finish becomes the
+ * wall finish and the overrides are dropped. The price is unchanged, but the design then
+ * describes what the customer actually sees ("whole wall in clinker") instead of an
+ * invisible wall default plus hundreds of overrides.
+ */
+export function collapseUniformWalls(project: FacadeProject, design: FacadeDesign): FacadeDesign {
+	let changed = false;
+	const wallFinishes = { ...design.wallFinishes };
+	const moduleOverrides = { ...design.moduleOverrides };
+	for (const wall of project.walls) {
+		const overrides = moduleOverrides[wall.id];
+		if (!overrides || wall.modules.length === 0) continue;
+		const first = overrides[wall.modules[0]!.id];
+		if (!first) continue;
+		const uniform = wall.modules.every((module) => finishesEqual(overrides[module.id], first));
+		if (!uniform) continue;
+		wallFinishes[wall.id] = { ...first };
+		delete moduleOverrides[wall.id];
+		changed = true;
+	}
+	return changed ? normalizeDesign({ wallFinishes, moduleOverrides }) : design;
 }
 
 /** Number of individually styled modules across the whole design. */

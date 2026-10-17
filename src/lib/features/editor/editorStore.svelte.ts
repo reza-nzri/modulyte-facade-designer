@@ -7,6 +7,7 @@
  */
 import {
 	applyModuleFinish,
+	collapseUniformWalls,
 	applyWallFinish,
 	countOverrides,
 	findSurface,
@@ -285,8 +286,9 @@ export class EditorStore {
 		this.#commit(design, label);
 	}
 
-	#commit(next: FacadeDesign, label: string) {
-		if (next === this.design) return;
+	#commit(proposed: FacadeDesign, label: string) {
+		if (proposed === this.design) return;
+		const next = this.project ? collapseUniformWalls(this.project, proposed) : proposed;
 		this.#past.push(this.design);
 		if (this.#past.length > HISTORY_LIMIT) this.#past.shift();
 		this.#future = [];

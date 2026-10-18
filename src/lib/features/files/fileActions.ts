@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 /** Browser file helpers (download and read), kept out of components for reuse and testing. */
 import type { FacadeDesign, FacadeProject } from '$lib/domain';
 import {
@@ -8,7 +9,7 @@ import {
 import { importFromData, importFromText, type ImportResult } from '$lib/io/importDocument';
 import { logger, timed } from '$lib/observability/logger';
 
-export const EXAMPLE_PROJECT_URL = '/projects/fassadendesigner_house.json';
+export const EXAMPLE_PROJECT_URL = `${base}/projects/fassadendesigner_house.json`;
 
 export function downloadText(fileName: string, text: string, mime = 'application/json') {
 	const blob = new Blob([text], { type: `${mime};charset=utf-8` });

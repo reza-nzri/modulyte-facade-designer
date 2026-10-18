@@ -48,24 +48,50 @@
 	}
 
 	const overrides = $derived(design.moduleOverrides[wall.id] ?? {});
+
+	function rectPath(rect: Rect): string {
+		return `M${rect.x_mm} ${svgY(rect)}h${rect.width_mm}v${rect.height_mm}h${-rect.width_mm}Z`;
+	}
+
+	// Static views (thumbnails, comparison, print) draw one path per finish instead of one
+	// element per module: far fewer DOM nodes and one pattern instance per finish in PDFs.
+	const mergedFills = $derived.by(() => {
+		if (interactive) return [];
+		// Plain object: a short-lived lookup inside the derivation, not reactive state.
+		const groups: Record<string, string> = {};
+		for (const module of wall.modules) {
+			const fill = fillFor(module.id);
+			groups[fill] = (groups[fill] ?? '') + rectPath(module);
+		}
+		return Object.entries(groups).map(([fill, d]) => ({ fill, d }));
+	});
+	const jointsPath = $derived(
+		interactive ? '' : wall.modules.map((module) => rectPath(module)).join('')
+	);
 </script>
 
 <g class="wall" class:interactive>
 	<!-- Existing wall behind the new facade (visible only where no module sits). -->
 	<rect class="wall-base" x="0" y="0" width={wall.width_mm} height={wall.height_mm} />
 
-	{#each wall.modules as module (module.id)}
-		<rect
-			class="module"
-			class:special={module.type === 'special'}
-			data-module-id={interactive ? module.id : undefined}
-			x={module.x_mm}
-			y={svgY(module)}
-			width={module.width_mm}
-			height={module.height_mm}
-			fill={fillFor(module.id)}
-		/>
-	{/each}
+	{#if interactive}
+		{#each wall.modules as module (module.id)}
+			<rect
+				class="module"
+				class:special={module.type === 'special'}
+				data-module-id={module.id}
+				x={module.x_mm}
+				y={svgY(module)}
+				width={module.width_mm}
+				height={module.height_mm}
+				fill={fillFor(module.id)}
+			/>
+		{/each}
+	{:else}
+		{#each mergedFills as group (group.fill)}
+			<path class="module" d={group.d} fill={group.fill} />
+		{/each}
+	{/if}
 
 	{#if technical}
 		{#each wall.modules as module (module.id)}
@@ -89,7 +115,7 @@
 				/>
 			{/if}
 		{/each}
-	{:else}
+	{:else if interactive}
 		{#each wall.modules as module (module.id)}
 			<rect
 				class="module-joint"
@@ -100,6 +126,8 @@
 				vector-effect="non-scaling-stroke"
 			/>
 		{/each}
+	{:else}
+		<path class="module-joint" d={jointsPath} vector-effect="non-scaling-stroke" />
 	{/if}
 
 	{#if highlightOverrides}

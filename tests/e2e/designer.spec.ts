@@ -1,6 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { clickModule, euro, openFreshApp, projectTotal, wallTotal } from './helpers';
+import {
+	clickModule,
+	euro,
+	expectProjectTotal,
+	expectWallTotal,
+	openFreshApp,
+	projectTotal
+} from './helpers';
 
 test.describe('Homeowner workflow', () => {
 	test.beforeEach(async ({ page }) => {
@@ -17,15 +24,15 @@ test.describe('Homeowner workflow', () => {
 		await expect(page.locator('[data-testid="facade-canvas"] rect.module')).toHaveCount(143);
 		await expect(page.locator('[data-testid="facade-canvas"] rect.module.special')).toHaveCount(22);
 		// Default: clinker everywhere = 168.30 m² × 95 €/m².
-		expect(await projectTotal(page)).toBe('15.988,50 €');
-		expect(await wallTotal(page)).toBe('3.980,50 €');
+		await expectProjectTotal(page, '15.988,50 €');
+		await expectWallTotal(page, '3.980,50 €');
 	});
 
 	test('changes material and colour of a whole wall with live price update', async ({ page }) => {
 		await page.getByTestId('swatch-rockpanel-grey').click();
 		// 41.90 m² × 70 €/m²
 		await expect(page.getByTestId('wall-total')).toHaveText(/2\.933,00/);
-		expect(await projectTotal(page)).toBe('14.941,00 €');
+		await expectProjectTotal(page, '14.941,00 €');
 		await expect(page.getByTestId('wall-card-south')).toContainText('Rockpanel-Platten · Grau');
 		// Colour change without material change keeps the price.
 		await page.getByTestId('swatch-rockpanel-black').click();
@@ -74,25 +81,25 @@ test.describe('Homeowner workflow', () => {
 
 	test('supports undo and redo', async ({ page }) => {
 		await page.getByTestId('swatch-rhombus-natural').click();
-		expect(await wallTotal(page)).toBe('3.352,00 €');
+		await expectWallTotal(page, '3.352,00 €');
 		await page.getByRole('button', { name: 'Rückgängig' }).click();
-		expect(await wallTotal(page)).toBe('3.980,50 €');
+		await expectWallTotal(page, '3.980,50 €');
 		await page.getByRole('button', { name: 'Wiederholen' }).click();
-		expect(await wallTotal(page)).toBe('3.352,00 €');
+		await expectWallTotal(page, '3.352,00 €');
 	});
 
 	test('switches walls and keeps designs per wall', async ({ page }) => {
 		await page.getByTestId('swatch-rockpanel-white').click();
 		await page.getByTestId('wall-card-east').click();
 		await expect(page.locator('[data-testid="facade-canvas"] rect.module')).toHaveCount(146);
-		expect(await wallTotal(page)).toBe('4.085,00 €');
+		await expectWallTotal(page, '4.085,00 €');
 		await expect(page.getByTestId('wall-card-south')).toContainText('2.933,00');
 	});
 
 	test('restores the design after a reload (autosave)', async ({ page }) => {
 		await page.getByTestId('swatch-rockpanel-white').click();
 		await page.reload();
-		expect(await projectTotal(page)).toBe('14.941,00 €');
+		await expectProjectTotal(page, '14.941,00 €');
 	});
 });
 
@@ -104,6 +111,7 @@ test.describe('Import and export', () => {
 		await page.getByTestId('swatch-rhombus-grey glaze').click();
 		await page.getByTestId('preset-plinth').click();
 		await page.getByTestId('swatch-clinker-sand').click();
+		await expect(page.getByTestId('wall-card-south')).toContainText('13 individuelle Module');
 		const totalBefore = await projectTotal(page);
 
 		const downloadPromise = page.waitForEvent('download');
@@ -143,7 +151,7 @@ test.describe('Import and export', () => {
 			'passt nicht zum erwarteten Aufbau'
 		);
 		await page.getByRole('button', { name: 'Verstanden' }).click();
-		expect(await projectTotal(page)).toBe('15.988,50 €');
+		await expectProjectTotal(page, '15.988,50 €');
 	});
 
 	test('imports the original Modulyte project file', async ({ page }) => {
@@ -162,6 +170,8 @@ test.describe('Bonus features', () => {
 	});
 
 	test('shows the house in 3D and selects a module by clicking it', async ({ page }) => {
+		// WebGL is rendered in software on headless CI runners, which is slow.
+		test.slow();
 		await page.getByTestId('view-3d').click();
 		const canvas = page.getByTestId('house-3d-canvas');
 		await expect(canvas).toBeVisible();

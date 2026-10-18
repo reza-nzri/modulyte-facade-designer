@@ -319,16 +319,38 @@
 		background: var(--swatch);
 		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
 	}
+	/*
+	 * Fixed height on purpose: this line changes on hover. If its height followed the content,
+	 * a scrolled sidebar would shift under the pointer, end the hover and shift back again
+	 * (layout feedback loop / flicker). Two lines always fit; longer text is clipped.
+	 */
 	.preview {
 		margin: 0;
-		min-height: 22px;
+		height: 40px;
+		overflow: hidden;
 		display: flex;
+		align-items: flex-start;
 		gap: 6px;
 		font-size: 13px;
+		line-height: 20px;
 		color: var(--ink-soft);
+	}
+	.preview > span:not(.hint) {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.preview strong {
+		flex-shrink: 0;
 	}
 	.preview .hint {
 		color: var(--muted);
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		overflow: hidden;
 	}
 	.wall-actions {
 		display: flex;

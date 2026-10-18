@@ -1,9 +1,9 @@
-# Package Managers
 package-lock.json
 pnpm-lock.yaml
-yarn.lock
-bun.lock
-bun.lockb
-
-# Miscellaneous
-/static/
+build
+.svelte-kit
+coverage
+playwright-report
+test-results
+# Original assessment data is kept byte-for-byte as delivered.
+static/projects/fassadendesigner_house.json

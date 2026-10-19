@@ -218,5 +218,5 @@ Reference numbers (also used as golden tests): clinker everywhere **15,988.50 �
 
 ---
 
-Assessment data (`static/projects/fassadendesigner_house.json`) © [Modulyte GmbH](https://www.modulyte.de/), used for this assignment only.
+Assessment data ([`static/projects/fassadendesigner_house.json`](https://github.com/reza-nzri/modulyte-facade-designer/blob/main/static/projects/fassadendesigner_house.json)) © [Modulyte GmbH](https://www.modulyte.de/), used for this assignment only.
 
